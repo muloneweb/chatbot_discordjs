@@ -110,6 +110,11 @@ client.on('messageCreate', async (msg) => {
                         { name: `${questions[8]}`, value: "```" + `${answers[8]}` + "```", inline: false },
                     )
                     .setFooter({ text: userId }); 
+                
+            client.channels.cache.get(thread.id).send({
+			content: `New Application from: <@${resp.id}> <@&502931648195723264>`, //<@&502931648195723264>
+			embeds: [exampleEmbed]
+	        });
             }
         }
     } catch (e) {
