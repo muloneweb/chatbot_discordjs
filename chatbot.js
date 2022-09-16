@@ -20,8 +20,8 @@ client.on('interactionCreate', async interaction => {
 
     if (interaction.customId == "STARTAPP") {
 
-        let userid = interaction.user.id
-        let findinDB = await db1.collection('Applications').find({ [userid]: { "$exists": true } }).toArray();
+        let userId = interaction.user.id
+        let findinDB = await db1.collection('Applications').find({ [userId]: { "$exists": true } }).toArray();
 
         if (findinDB.length == 0) {
             try {
@@ -31,7 +31,7 @@ client.on('interactionCreate', async interaction => {
                     .setTitle(`question1`)
 
                 interaction.user.send({ embeds: [exampleEmbed] })
-                await db1.collection('Applications').updateOne({ _id: ObjectId("62bf7e5770161c5928c2f6bc") }, { $set: { [userid]: { questions: [] } } })
+                await db1.collection('Applications').updateOne({ _id: ObjectId("62bf7e5770161c5928c2f6bc") }, { $set: { [userId]: { answers: [] } } })
             } catch (e) {
                 console.log(e)
                 await interaction.reply({ "content": `<@${interaction.user.id}> The bot cannot start the Direct Message process: you probably have to enable Direct Messages in your settings. Then apply again`, ephemeral: true, "allowedMentions": { "replied_user": false, "parse": [] } })
@@ -63,24 +63,53 @@ client.on('messageCreate', async (msg) => {
 
     try {
         const botId = "<BOT_ID_NUMBER>"
-        let userid = msg.author.id.toString()
+        let userId = msg.author.id.toString()
 
         //only record messages that do not come from the bot
-        if (userid !== botId) {
+        if (userId !== botId) {
 
-            let findinDB = await db1.collection('Applications').find({ [userid]: { "$exists": true } }).toArray();
-            let questionsArray = findinDB[0][userid].questions
-            questionsArray.push(sanitize(msg.content))
-            await db1.collection('Applications').updateOne({ _id: ObjectId("62bf7e5770161c5928c2f6bc") }, { $set: { [userid]: { questions: questionsArray } } })
+            let findinDB = await db1.collection('Applications').find({ [userId]: { "$exists": true } }).toArray();
+            let answersArray = findinDB[0][userId].answers
+            answersArray.push(sanitize(msg.content))
+            await db1.collection('Applications').updateOne({ _id: ObjectId("62bf7e5770161c5928c2f6bc") }, { $set: { [userId]: { answers: answersArray } } })
 
             for (let i = 0; i < questions.length - 1; i++) {
-                if (questionsArray[i] == undefined) {
+                if (answersArray[i] == undefined) {
                     const exampleEmbed = new MessageEmbed()
                         .setColor('#0099ff')
                         .setTitle(questions[i])
                     msg.reply({ embeds: [exampleEmbed] })
                 }
                 break
+            }
+
+            if (questions.length === answersArray.length) {
+                const channel = client.channels.cache.get("<CHANNELID_TO_SEND>")
+                const thread = await channel.threads.create({
+                    name: `📋 New Application`,
+                    auto_archive_duration: 1440,
+                    type: 'GUILD_PUBLIC_THREAD'
+                });
+
+                let findinDB = await db1.collection('Applications').find({ [userId]: { "$exists": true } }).toArray();
+                let answers = findinDB[0][userId].answers
+                const exampleEmbed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setTitle(`New Application`)
+                    .setAuthor({ name: `${msg.author.username}` }) 
+                    .setThumbnail(`https://cdn.discordapp.com/avatars/${resp.id}/${resp.avatar}.png`)
+                    .addFields(
+                        { name: `${questions[0]}`, value: "```" + `${answers[0]}` + "```", inline: false },
+                        { name: `${questions[1]}`, value: "```" + `${answers[1]}` + "```", inline: false },
+                        { name: `${questions[2]}`, value: "```" + `${answers[2]}` + "```", inline: false },
+                        { name: `${questions[3]}`, value: "```" + `${answers[3]}` + "```", inline: false },
+                        { name: `${questions[4]}`, value: "```" + `${answers[4]}` + "```", inline: false },
+                        { name: `${questions[5]}`, value: "```" + `${answers[5]}` + "```", inline: false },
+                        { name: `${questions[6]}`, value: "```" + `${answers[6]}` + "```", inline: false },
+                        { name: `${questions[7]}`, value: "```" + `${answers[7]}` + "```", inline: false },
+                        { name: `${questions[8]}`, value: "```" + `${answers[8]}` + "```", inline: false },
+                    )
+                    .setFooter({ text: userId }); 
             }
         }
     } catch (e) {
