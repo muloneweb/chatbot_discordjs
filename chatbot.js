@@ -112,7 +112,7 @@ client.on('messageCreate', async (msg) => {
                     .setFooter({ text: userId }); 
                 
             client.channels.cache.get(thread.id).send({
-			content: `New Application from: <@${resp.id}> <@&502931648195723264>`, //<@&502931648195723264>
+			content: `New Application from: <@${resp.id}>`,
 			embeds: [exampleEmbed]
 	        });
             }
